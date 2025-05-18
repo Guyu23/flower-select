@@ -1,10 +1,34 @@
 <script setup>
+import { ref } from 'vue'
 import FlowerSelect from './components/FlowerSelect/FlowerSelect.vue'
+
+const options = ref([
+  {
+    label: '选项1',
+    value: 'option1'
+  },
+  {
+    label: '选项2',
+    value: 'option2'
+  },
+  {
+    label: '选项3',
+    value: 'option3'
+  },
+  {
+    label: '选项4',
+    value: 'option4'
+  },
+  {
+    label: '选项5',
+    value: 'option5'
+  }
+])
 </script>
 
 <template>
   <div>
-    <FlowerSelect />
+    <FlowerSelect :options/>
   </div>
 </template>
 

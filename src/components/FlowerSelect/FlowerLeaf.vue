@@ -1,130 +1,115 @@
-<script setup>
+<script
+  setup
+  lang="ts"
+>
 import { ref, computed } from 'vue';
 
-const { width, pad, text, startDeg, endDeg, stopColor, circleWidth, selectGap } = defineProps({
-  width: {
-    type: Number,
-    default: 320
-  },
-  pad: {
-    type: Number,
-    default: 10
-  },
-  text: {
-    type: String,
-    default: '默认名称'
-  },
-  startDeg: {
-    type: Number,
-    default: 0
-  },
-  endDeg: {
-    type: Number,
-    default: 60
-  },
-  stopColor: {
-    type: Array,
-    default: ['#2E3192', '#1BFFFF']
-  },
-  delay: {
-    type: Number,
-    default: 0
-  },
-  circleWidth: {
-    type: Number,
-    default: 100
-  },
-  selectGap: {
-    type: Number,
-    default: 5
+const {
+  width, // 宽度
+  height, // 高度
+  delay, // 延迟
+  startAngle, // 开始角度
+  endAngle, // 结束角度
+  stopColor, // 渐变色
+  cutWidth, // 花瓣起始的位置
+  text = '选项', // 花瓣上的文字
+  fontSize = 16, // 字体大小
+} = defineProps<{
+  width: number;
+  height: number;
+  delay: number;
+  startAngle: number;
+  endAngle: number;
+  stopColor: [string, string];
+  cutWidth: number;
+  text?: string;
+  fontSize?: number;
+}>()
+
+const style = computed(() => {
+  return {
+    width: `${width}px`,
+    height: `${height}px`,
+    '--start-angle': `${startAngle}deg`,
+    '--end-angle': `${endAngle}deg`,
+    '--delay': `${delay}s`,
   }
 })
 
-const height = computed(() => width / 3)
 
-const l = computed(() => {
-  const start = [0, width / 6]
-  const end = [width * 3 / 4, pad]
-  return Math.sqrt(Math.pow(end[0] - start[0], 2) + Math.pow(end[1] - start[1], 2))
+const position = computed(() => {
+  const r = height / 2
+  const l = width - r
+  const cosθ = r / l
+  const sinθ = Math.sin(Math.acos(cosθ)) // cosθ = r / l
+  const startH = cutWidth * cosθ // 起始点到中线距离
+  const tanH = r * sinθ // 切点到中线距离
+  const startX = cutWidth * sinθ // 起始点x坐标
+  const endX = startX // 结束点x坐标
+  const startY = r + startH // 因为是从下往上逆时针画
+  const endY = r - startH
+  const tanPointX = (l ** 2 - r ** 2) / l
+  const tanPointY = r - tanH
+  const tanPointY_2 = r + tanH
+
+  const textX = (width + startX + r) / 2
+  const textY = r
+  return {
+    d: `M ${startX} ${startY} A ${cutWidth} ${cutWidth} 0 0 0 ${endX} ${endY} L ${tanPointX} ${tanPointY} A ${r} ${r} 0 1 1 ${tanPointX} ${tanPointY_2} Z`,
+    textX,
+    textY,
+  }
 })
-
-const m = computed(() => {
-  return width / 6 - pad
-})
-
-const r = computed(() => {
-  return m.value * l.value / Math.sqrt(Math.pow(l.value, 2) - Math.pow(m.value, 2))
-})
-
-
-const startArc = computed(() => {
-  const r = circleWidth / 2 + selectGap  // gap
-  const k = (pad - width / 6) / (width * 3 / 4) // 斜率 y2 - y1 / x2 - x1
-  const sinθ = m.value / l.value
-  const h = sinθ * r
-  const y = height.value / 2 - h
-  const y2 = height.value / 2 + h
-  const x = Math.cos(Math.asin(sinθ)) * r
-  const arcString = `M ${x} ${y2} A ${r} ${r} 0 0 0 ${x} ${y}`
-  return arcString
-})
-
-const d = computed(() => {
-  return `${startArc.value} L ${width * 3 / 4} ${pad} A ${r.value} ${r.value} 1 1 1 ${width * 3 / 4} ${height.value - pad} Z`
-})
-
 </script>
 
 <template>
-  <div class='flower-leaf'
-       :style="{ width: `${width}px`, height: `${height}px`, '--endDeg': endDeg + 'deg', '--startDeg': startDeg + 'deg', '--delay': delay + 's' }">
-    <svg width="100%"
-         height="100%">
-      <g>
-        <defs>
-          <linearGradient id="gradient"
-                          x1="0%"
-                          y1="0%"
-                          x2="100%"
-                          y2="0%">
-            <stop offset="0%"
-                  :stop-color="stopColor[0]" />
-            <stop offset="100%"
-                  :stop-color="stopColor[1]" />
-          </linearGradient>
-        </defs>
-      </g>
-      <path :d
+  <div class="flower-leaf"
+       :style>
+    <svg>
+      <path :d="position.d"
             fill="url(#gradient)" />
-      <text :x="width * 3 / 5"
-            :y="height / 2"
-            font-size="16"
+      <text :x="position.textX"
+            :y="position.textY"
             style="dominant-baseline: middle; text-anchor: middle;"
-            fill="white">
-        {{ text }}
-      </text>
+            :font-size="fontSize + 'px'"
+            fill="white"
+            font-weight="bold">{{ text }}</text>
+      <defs>
+        <linearGradient id="gradient">
+          <stop :offset="0"
+                :stop-color="stopColor[0]" />
+          <stop :offset="1"
+                :stop-color="stopColor[1]" />
+        </linearGradient>
+      </defs>
     </svg>
-
   </div>
 </template>
 
-<style scoped>
+<style
+  scoped
+  lang="less"
+>
 .flower-leaf {
   position: absolute;
+  opacity: 0;
   transform-origin: left;
-  animation: flower-leaf-animation 0.5s ease-in-out forwards;
-  animation-delay: var(--delay);
+  animation: rotate 0.5s ease-in-out var(--delay) forwards;
+  svg {
+    border: 1px solid red;
+    width: 100%;
+    height: 100%;
+  }
 }
 
-@keyframes flower-leaf-animation {
+@keyframes rotate {
   0% {
     opacity: 0;
-    transform: rotate(var(--startDeg));
+    transform: rotate(var(--start-angle));
   }
-
   100% {
-    transform: rotate(var(--endDeg));
     opacity: 1;
+    transform: rotate(var(--end-angle));
   }
 }
 </style>

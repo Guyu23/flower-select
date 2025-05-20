@@ -2,7 +2,7 @@
   setup
   lang="ts"
 >
-import { ref, computed } from 'vue';
+import { computed, useId } from 'vue';
 
 const {
   width, // 宽度
@@ -12,7 +12,10 @@ const {
   endAngle, // 结束角度
   stopColor, // 渐变色
   cutWidth, // 花瓣起始的位置
-  text = '选项', // 花瓣上的文字
+  data = {
+    label: '选项',
+    value: '1',
+  }, // 花瓣上的文字
   fontSize = 16, // 字体大小
 } = defineProps<{
   width: number;
@@ -22,10 +25,13 @@ const {
   endAngle: number;
   stopColor: [string, string];
   cutWidth: number;
-  text?: string;
+  data: {
+    label: string;
+    value: string;
+  };
   fontSize?: number;
 }>()
-
+const uniqueId = useId()
 const style = computed(() => {
   return {
     width: `${width}px`,
@@ -67,15 +73,15 @@ const position = computed(() => {
        :style>
     <svg>
       <path :d="position.d"
-            fill="url(#gradient)" />
+            :fill="`url(#gradient-${uniqueId})`" />
       <text :x="position.textX"
             :y="position.textY"
             style="dominant-baseline: middle; text-anchor: middle;"
             :font-size="fontSize + 'px'"
             fill="white"
-            font-weight="bold">{{ text }}</text>
+            font-weight="bold">{{ data.label }}</text>
       <defs>
-        <linearGradient id="gradient">
+        <linearGradient :id="`gradient-${uniqueId}`">
           <stop :offset="0"
                 :stop-color="stopColor[0]" />
           <stop :offset="1"
@@ -96,7 +102,6 @@ const position = computed(() => {
   transform-origin: left;
   animation: rotate 0.5s ease-in-out var(--delay) forwards;
   svg {
-    border: 1px solid red;
     width: 100%;
     height: 100%;
   }

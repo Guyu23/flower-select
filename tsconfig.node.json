@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "composite": true,
+  "module": "ESNext",
+  "moduleResolution": "Node",
+  "allowSyntheticDefaultImports": true,
+  "resolveJsonModule": true,
+  "target": "ESNext",
+  "lib": ["ESNext"]
+}

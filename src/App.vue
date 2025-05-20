@@ -1,15 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import FlowerSelect from './components/FlowerSelect/FlowerSelect.vue'
+import type { FlowerSelectOption } from './types/flower'
 
 const options = ref<FlowerSelectOption>({
-  width: 180,
+  width: 200,
   height: 80,
-  delay: 0,
-  startAngle: 25,
-  endAngle: -25,
-  cutWidth: 30,
   fontSize: 20,
+  gap: 30,
+  direction: 'right',
+  data: [
+    {
+      label: '选项1',
+      value: '1',
+    },
+    {
+      label: '选项2',
+      value: '2',
+    },
+    {
+      label: '选项3',
+      value: '3',
+    },
+    {
+      label: '选项4',
+      value: '4',
+    },
+    {
+      label: '选项5',
+      value: '5',
+    },
+  ],
 })
 </script>
 

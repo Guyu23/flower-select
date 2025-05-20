@@ -2,45 +2,74 @@
   setup
   lang="ts"
 >
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import FlowerLeaf from './FlowerLeaf.vue';
-import type { FlowerSelectOption } from '@/types/flower';
+import type { FlowerSelectOption } from '../../types/flower';
 
-const { options, width = 50, backgroundColor = 'lightgray' } = defineProps<{
+const { options, width = 50, backgroundColor = 'transparent' } = defineProps<{
   options: FlowerSelectOption;
   width?: number;
   backgroundColor?: string;
 }>()
 
-const ColorMap = [
+const ColorMap: [string, string][] = [
   ['#4E65FF', '#92EFFD'],
-  ['#BFF098', '#6FD6FF'],
-  ['#FF61D2', '#FE9090'],
-  ['#D8B5FF', '#1EAE98'],
+  ['#6FD6FF', '#BFF098'],
+  ['#C6EA8D', '#FE90AF'],
   ['#EA8D8D', '#A890FE'],
-  ['#FF5F6D', '#FFC371'],
+  ['#D8B5FF', '#1EAE98'],
 ]
+
+const extraDegMap = {
+  right: 0,
+  bottom: 90,
+  left: 180,
+  top: 270,
+}
+
+const direction = computed(() => {
+  return options.direction || 'right';
+})
 
 const style = computed(() => {
   return {
     width: `${width}px`,
     height: `${width}px`,
-    backgroundColor: backgroundColor,
+    backgroundColor,
     '--top': `${width / 2 - options.height / 2}px`,
   }
 })
 
-const obj = {
-  width: 180,
-  height: 80,
-  delay: 0,
-  startAngle: 25,
-  endAngle: -25,
-  stopColor: ColorMap[1],
-  cutWidth: 30,
-  fontSize: 20,
-  text: '李位力',
-}
+const computedData = computed(() => {
+  const extraDeg = extraDegMap[direction.value]
+  const r = options.height / 2
+  const l = options.width - r
+  const cosβ = r / l
+  const θ = Math.asin(cosβ) * 2 // 角度
+  const dataLength = options.data.length // 选项数量
+  const isEven = dataLength % 2 === 0 // 是否为偶数
+  const count = Math.floor(dataLength / 2) // 花瓣数量的一半，因为基线会分隔选项
+  const colorMapLength = ColorMap.length // 颜色数量
+  const singleDeg = (θ + options.gap) // 单次旋转角度
+  const startAngle = (isEven ? (count - 0.5) * singleDeg : count * singleDeg) + extraDeg // 结束角度
+  return options.data.map((item, i) => {
+    const option = {
+      width: options.width,
+      height: options.height,
+      delay: i * 0.2,
+      endAngle: startAngle - singleDeg * (dataLength - i - 1),
+      startAngle,
+      data: item,
+      stopColor: ColorMap[i % colorMapLength],
+      cutWidth: width
+    }
+    console.log(option.stopColor)
+
+    return option
+  })
+})
+
+
 </script>
 
 
@@ -48,7 +77,9 @@ const obj = {
 
   <div class="flower-select"
        :style>
-    <FlowerLeaf v-bind="obj" />
+    <FlowerLeaf v-for="option in computedData"
+                :key="option.data.value"
+                v-bind="option" />
   </div>
 </template>
 

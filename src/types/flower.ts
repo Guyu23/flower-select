@@ -1,11 +1,9 @@
 export type FlowerSelectOption = {
   width: number;
   height: number;
-  delay: number;
-  startAngle: number;
-  endAngle: number;
-  cutWidth: number;
+  gap: number;
   fontSize: number;
+  direction?: 'left' | 'right' | 'top' | 'bottom';
   data: {
     label: string;
     value: string;
